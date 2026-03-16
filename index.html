@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Chit Chat Messages</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'Nunito', sans-serif; background: #e8edf8; color: #1a2340; }
+
+    .screen { display: none; min-height: 100vh; flex-direction: column; }
+    .screen.active { display: flex; }
+
+    /* ── LOGIN ── */
+    #screen-login {
+      background: linear-gradient(160deg, #4A7FE0 0%, #6FA0F8 50%, #FFD166 100%);
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .login-card {
+      background: white; border-radius: 24px;
+      padding: 36px 28px; width: 100%; max-width: 380px;
+      box-shadow: 0 20px 60px rgba(74,127,224,0.25);
+    }
+    .login-logo { display: flex; align-items: center; gap: 12px; justify-content: center; margin-bottom: 6px; }
+    .login-brand-icon { position: relative; width: 52px; height: 46px; flex-shrink: 0; }
+    .bubble-chit {
+      position: absolute; top: 0; left: 0;
+      background: #4A7FE0; border-radius: 10px 10px 10px 2px;
+      width: 30px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 7px; font-weight: 800; color: white;
+    }
+    .bubble-chit::after { content:''; position:absolute; bottom:-5px; left:3px; border-left:5px solid #4A7FE0; border-bottom:5px solid transparent; }
+    .bubble-chat {
+      position: absolute; bottom: 0; right: 0;
+      background: #FFD166; border-radius: 10px 10px 2px 10px;
+      width: 30px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 7px; font-weight: 800; color: #633806;
+    }
+    .bubble-chat::after { content:''; position:absolute; bottom:-5px; right:3px; border-right:5px solid #FFD166; border-bottom:5px solid transparent; }
+    .login-title { font-size: 21px; font-weight: 800; color: #1a2340; }
+    .login-subtitle { font-size: 13px; color: #8895b3; text-align: center; margin-bottom: 24px; margin-top: 4px; }
+    .role-row { display: flex; gap: 10px; margin-bottom: 18px; }
+    .role-btn {
+      flex: 1; padding: 10px; border-radius: 12px;
+      border: 1.5px solid #e8edfa; background: #f7f9ff;
+      font-size: 13px; font-weight: 700; color: #8895b3;
+      cursor: pointer; font-family: 'Nunito', sans-serif; text-align: center;
+    }
+    .role-btn.selected { border-color: #4A7FE0; background: #EEF4FF; color: #4A7FE0; }
+    .field-label { font-size: 12px; font-weight: 700; color: #5a6688; margin-bottom: 5px; display: block; }
+    .field-input {
+      width: 100%; padding: 12px 16px; border-radius: 12px;
+      border: 1.5px solid #e8edfa; font-size: 15px;
+      font-family: 'Nunito', sans-serif; color: #1a2340;
+      outline: none; background: #f7f9ff; margin-bottom: 14px;
+    }
+    .field-input:focus { border-color: #4A7FE0; background: white; }
+    .login-error {
+      background: #FCEBEB; color: #A32D2D; border-radius: 10px;
+      padding: 10px 14px; font-size: 12px; font-weight: 700;
+      margin-bottom: 12px; display: none;
+    }
+    .login-btn {
+      width: 100%; padding: 14px; border-radius: 14px;
+      background: #4A7FE0; color: white; border: none;
+      font-size: 16px; font-weight: 800; cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+    }
+    .login-btn:active { background: #3a6fd0; }
+    .login-footer { font-size: 11px; color: #a0a8c0; text-align: center; margin-top: 16px; line-height: 1.6; }
+
+    /* ── APP SHELL ── */
+    #screen-app { background: #f0f4ff; }
+    .status-bar {
+      background: #4A7FE0; padding: 7px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      color: white; font-size: 11px; font-weight: 600; flex-shrink: 0;
+    }
+    .app-header {
+      background: linear-gradient(135deg, #4A7FE0, #6FA0F8);
+      padding: 13px 16px; color: white;
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .header-icon { position: relative; width: 48px; height: 42px; flex-shrink: 0; }
+    .hb-chit {
+      position: absolute; top: 0; left: 0;
+      background: white; border-radius: 10px 10px 10px 2px;
+      width: 28px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 7px; font-weight: 800; color: #4A7FE0;
+    }
+    .hb-chit::after { content:''; position:absolute; bottom:-5px; left:3px; border-left:5px solid white; border-bottom:5px solid transparent; }
+    .hb-chat {
+      position: absolute; bottom: 0; right: 0;
+      background: #FFD166; border-radius: 10px 10px 2px 10px;
+      width: 28px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 7px; font-weight: 800; color: #633806;
+    }
+    .hb-chat::after { content:''; position:absolute; bottom:-5px; right:3px; border-right:5px solid #FFD166; border-bottom:5px solid transparent; }
+    .brand-name { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+    .brand-sub  { font-size: 11px; font-weight: 500; opacity: 0.85; margin-top: 1px; }
+    .header-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #FFD166; color: #633806;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 13px; cursor: pointer;
+      border: 2px solid rgba(255,255,255,0.4);
+    }
+
+    /* TABS */
+    .tab-bar {
+      background: white; display: flex;
+      border-bottom: 1.5px solid #e8edfa;
+      overflow-x: auto; -webkit-overflow-scrolling: touch; flex-shrink: 0;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab {
+      padding: 12px 18px 10px; font-size: 13px; font-weight: 700;
+      color: #8895b3; cursor: pointer; white-space: nowrap;
+      border-bottom: 3px solid transparent;
+      display: flex; align-items: center; gap: 5px;
+      transition: color 0.2s; flex-shrink: 0;
+    }
+    .tab.active { color: #4A7FE0; border-bottom-color: #4A7FE0; }
+
+    /* PANELS */
+    .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* EMPTY STATE */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 50px 24px;
+      text-align: center; gap: 10px;
+    }
+    .empty-icon { font-size: 50px; }
+    .empty-title { font-size: 17px; font-weight: 800; color: #1a2340; }
+    .empty-sub { font-size: 13px; color: #8895b3; line-height: 1.6; max-width: 260px; }
+
+    /* ── MESSAGES ── */
+    .msg-layout { display: flex; }
+    .thread-list { width: 100%; background: white; min-height: calc(100vh - 190px); }
+    .chat-area { display: none; flex-direction: column; width: 100%; background: #f7f9ff; min-height: calc(100vh - 190px); }
+    @media (min-width: 640px) {
+      .thread-list { width: 270px; flex-shrink: 0; border-right: 1.5px solid #e8edfa; overflow-y: auto; min-height: 0; }
+      .chat-area { display: flex !important; flex: 1; width: auto; }
+      .back-btn { display: none !important; }
+      .thread-list.mob-hide { display: block !important; }
+    }
+    .thread-header {
+      padding: 14px 14px 8px; font-size: 10px; font-weight: 800;
+      color: #8895b3; text-transform: uppercase; letter-spacing: 0.8px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .add-btn {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #4A7FE0; color: white; border: none;
+      font-size: 18px; cursor: pointer; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .thread-item {
+      padding: 12px 14px; display: flex; gap: 10px; align-items: center;
+      cursor: pointer; border-left: 3px solid transparent;
+      border-bottom: 1px solid #f5f7ff; transition: background 0.15s;
+    }
+    .thread-item:hover { background: #f5f7ff; }
+    .thread-item.active { background: #EEF4FF; border-left-color: #4A7FE0; }
+    .t-av {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 14px; flex-shrink: 0;
+    }
+    .t-info { flex: 1; min-width: 0; }
+    .t-name { font-size: 14px; font-weight: 700; color: #1a2340; }
+    .t-snip { font-size: 12px; color: #8895b3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+    .t-time { font-size: 10px; color: #a0a8c0; flex-shrink: 0; }
+
+    .chat-header {
+      padding: 12px 14px; background: white;
+      border-bottom: 1.5px solid #e8edfa;
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    }
+    .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #4A7FE0; padding: 0; }
+    .c-av { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+    .c-name { font-size: 15px; font-weight: 800; color: #1a2340; }
+    .c-status { font-size: 11px; color: #1D9E75; font-weight: 600; }
+    .odot { width: 7px; height: 7px; background: #1D9E75; border-radius: 50%; display: inline-block; margin-right: 3px; }
+
+    .messages { padding: 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; min-height: 240px; }
+    .msg-row { display: flex; gap: 7px; align-items: flex-end; }
+    .msg-row.mine { flex-direction: row-reverse; }
+    .msg-bub { max-width: 75%; padding: 9px 13px; border-radius: 14px; font-size: 14px; line-height: 1.5; }
+    .msg-bub.theirs { background: white; border: 1.5px solid #e8edfa; color: #1a2340; border-bottom-left-radius: 4px; }
+    .msg-bub.mine { background: #4A7FE0; color: white; border-bottom-right-radius: 4px; }
+    .msg-t { font-size: 10px; color: #a0a8c0; margin-top: 3px; }
+    .msg-t.r { text-align: right; }
+    .m-av { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
+
+    .chat-input-bar {
+      padding: 10px 14px; background: white; border-top: 1.5px solid #e8edfa;
+      display: flex; gap: 8px; align-items: center; flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1; padding: 10px 14px; border-radius: 20px;
+      border: 1.5px solid #e8edfa; font-size: 14px;
+      font-family: 'Nunito', sans-serif; color: #1a2340;
+      outline: none; background: #f7f9ff;
+    }
+    .chat-input:focus { border-color: #4A7FE0; background: white; }
+    .send-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: #4A7FE0; border: none; color: white;
+      font-size: 16px; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .send-btn:active { background: #3a6fd0; transform: scale(0.95); }
+
+    /* ── CLASSES ── */
+    .groups-wrap { padding: 16px; }
+    .sec-title { font-size: 16px; font-weight: 800; color: #1a2340; margin-bottom: 12px; }
+    .groups-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (min-width: 600px) { .groups-grid { grid-template-columns: repeat(3,1fr); } }
+    @media (min-width: 860px) { .groups-grid { grid-template-columns: repeat(4,1fr); } }
+    .group-card {
+      background: white; border-radius: 16px; border: 1.5px solid #e8edfa;
+      padding: 16px; cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .group-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(74,127,224,0.1); }
+    .g-icon { font-size: 30px; margin-bottom: 8px; }
+    .g-name { font-size: 14px; font-weight: 800; color: #1a2340; }
+    .g-meta { font-size: 11px; color: #8895b3; margin-top: 2px; }
+    .g-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 8px; margin-top: 8px; background: #EEF4FF; color: #0C447C; }
+    .add-group-card {
+      background: #f7f9ff; border: 2px dashed #c8d4f0; border-radius: 16px;
+      padding: 16px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 6px; cursor: pointer; min-height: 110px;
+    }
+    .add-group-card:hover { border-color: #4A7FE0; }
+    .ag-plus { font-size: 28px; color: #c8d4f0; font-weight: 700; }
+    .ag-text { font-size: 12px; font-weight: 700; color: #a0a8c0; }
+
+    /* ── SETTINGS ── */
+    .settings-wrap { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .profile-card {
+      background: white; border-radius: 16px; border: 1.5px solid #e8edfa;
+      padding: 20px; display: flex; align-items: center; gap: 14px;
+    }
+    .p-av {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #4A7FE0; color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 800; flex-shrink: 0;
+    }
+    .p-name { font-size: 17px; font-weight: 800; color: #1a2340; }
+    .p-role { font-size: 12px; color: #8895b3; margin-top: 2px; }
+    .s-group { background: white; border-radius: 16px; border: 1.5px solid #e8edfa; overflow: hidden; }
+    .s-group-title { padding: 10px 16px 6px; font-size: 10px; font-weight: 800; color: #8895b3; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid #f0f4ff; }
+    .s-row {
+      padding: 14px 16px; display: flex; align-items: center;
+      justify-content: space-between; border-bottom: 1px solid #f5f7ff;
+      transition: background 0.15s;
+    }
+    .s-row:last-child { border-bottom: none; }
+    .s-row:hover { background: #f7f9ff; }
+    .s-left { display: flex; align-items: center; gap: 12px; }
+    .s-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .s-label { font-size: 14px; font-weight: 700; color: #1a2340; }
+    .s-sub { font-size: 11px; color: #8895b3; margin-top: 1px; }
+    .s-arrow { color: #c8d4f0; font-size: 18px; font-weight: 700; }
+    .toggle { width: 44px; height: 24px; border-radius: 12px; background: #4A7FE0; position: relative; cursor: pointer; border: none; transition: background 0.2s; flex-shrink: 0; }
+    .toggle::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:white; transition:transform 0.2s; }
+    .toggle.off { background: #e8edfa; }
+    .toggle.on::after { transform: translateX(20px); }
+    .logout-btn {
+      width: 100%; padding: 14px; border-radius: 14px;
+      background: #FCEBEB; color: #A32D2D; border: none;
+      font-size: 15px; font-weight: 800; cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+    }
+    .logout-btn:hover { background: #f5c1c1; }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      background: white; border-top: 1.5px solid #e8edfa;
+      display: flex; padding: 8px 0 max(12px, env(safe-area-inset-bottom));
+      justify-content: space-around; flex-shrink: 0;
+      position: sticky; bottom: 0; z-index: 10;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      cursor: pointer; padding: 5px 0; color: #a0a8c0;
+      font-size: 10px; font-weight: 700; border-radius: 10px;
+      transition: all 0.15s; flex: 1;
+    }
+    .nav-item.active { color: #4A7FE0; background: #EEF4FF; }
+    .nav-icon { font-size: 22px; }
+
+    /* MODALS */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(26,35,64,0.5); z-index: 100;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; border-radius: 20px; padding: 24px; width: 100%; max-width: 340px; }
+    .modal-title { font-size: 17px; font-weight: 800; color: #1a2340; margin-bottom: 16px; }
+    .modal-label { font-size: 12px; font-weight: 700; color: #5a6688; margin-bottom: 5px; display: block; }
+    .modal-input {
+      width: 100%; padding: 11px 14px; border-radius: 10px;
+      border: 1.5px solid #e8edfa; font-size: 14px;
+      font-family: 'Nunito', sans-serif; color: #1a2340;
+      outline: none; background: #f7f9ff; margin-bottom: 14px;
+    }
+    .modal-input:focus { border-color: #4A7FE0; }
+    .modal-btns { display: flex; gap: 10px; }
+    .m-cancel { flex:1; padding:11px; border-radius:12px; border:1.5px solid #e8edfa; background:white; font-size:14px; font-weight:700; color:#8895b3; font-family:'Nunito',sans-serif; cursor:pointer; }
+    .m-ok { flex:1; padding:11px; border-radius:12px; border:none; background:#4A7FE0; color:white; font-size:14px; font-weight:700; font-family:'Nunito',sans-serif; cursor:pointer; }
+    .m-ok:active { background: #3a6fd0; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-brand-icon">
+        <div class="bubble-chit">Chit</div>
+        <div class="bubble-chat">Chat</div>
+      </div>
+      <div class="login-title">Chit Chat Messages</div>
+    </div>
+    <div class="login-subtitle">Riverside Academy Student Portal</div>
+
+    <div class="role-row">
+      <div class="role-btn selected" id="role-student" onclick="selectRole('student')">🎒 Student</div>
+      <div class="role-btn" id="role-teacher" onclick="selectRole('teacher')">📖 Teacher</div>
+    </div>
+
+    <div id="login-error" class="login-error">Please enter your name and password.</div>
+
+    <label class="field-label">Your Name</label>
+    <input class="field-input" id="login-name" type="text" placeholder="e.g. Jamie K." autocomplete="name" />
+
+    <label class="field-label">Password</label>
+    <input class="field-input" id="login-pass" type="password" placeholder="Enter your password" autocomplete="current-password" />
+
+    <button class="login-btn" onclick="doLogin()">Sign In ›</button>
+    <div class="login-footer">Riverside Academy · School Communications System<br/>Contact your teacher if you need help logging in.</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="screen-app" class="screen">
+
+  <div class="status-bar">
+    <span id="clock">9:41 AM</span>
+    <span>Riverside Academy</span>
+    <span>WiFi 100%</span>
+  </div>
+
+  <div class="app-header">
+    <div class="brand">
+      <div class="header-icon">
+        <div class="hb-chit">Chit</div>
+        <div class="hb-chat">Chat</div>
+      </div>
+      <div>
+        <div class="brand-name">Chit Chat Messages</div>
+        <div class="brand-sub" id="header-sub">Riverside Academy</div>
+      </div>
+    </div>
+    <div class="header-avatar" id="header-av" onclick="showPanel('settings')">?</div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" id="tab-messages" onclick="showPanel('messages')">💬 Messages</div>
+    <div class="tab" id="tab-groups" onclick="showPanel('groups')">👥 Classes</div>
+    <div class="tab" id="tab-settings" onclick="showPanel('settings')">⚙️ Settings</div>
+  </div>
+
+  <div class="content">
+
+    <!-- MESSAGES -->
+    <div class="panel active" id="panel-messages">
+      <div class="msg-layout">
+        <div class="thread-list" id="thread-list">
+          <div class="thread-header">
+            Conversations
+            <button class="add-btn" onclick="openModal('modal-contact')" title="New message">+</button>
+          </div>
+          <div id="thread-items">
+            <div class="empty-state" style="min-height:300px">
+              <div class="empty-icon">💬</div>
+              <div class="empty-title">No messages yet</div>
+              <div class="empty-sub">Tap + to start a conversation with a classmate or teacher.</div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-area" id="chat-area">
+          <div class="empty-state" style="min-height:300px">
+            <div class="empty-icon">👋</div>
+            <div class="empty-title">No chat open</div>
+            <div class="empty-sub">Select a conversation or tap + to start a new one.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLASSES -->
+    <div class="panel" id="panel-groups">
+      <div class="groups-wrap">
+        <div class="sec-title">My Classes</div>
+        <div class="groups-grid" id="groups-grid">
+          <div class="add-group-card" onclick="openModal('modal-group')">
+            <div class="ag-plus">+</div>
+            <div class="ag-text">Join a class</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="panel-settings">
+      <div class="settings-wrap">
+        <div class="profile-card">
+          <div class="p-av" id="settings-av">?</div>
+          <div>
+            <div class="p-name" id="settings-name">—</div>
+            <div class="p-role" id="settings-role">Riverside Academy</div>
+          </div>
+        </div>
+        <div class="s-group">
+          <div class="s-group-title">Account</div>
+          <div class="s-row">
+            <div class="s-left">
+              <div class="s-icon" style="background:#EEF4FF">👤</div>
+              <div><div class="s-label">Edit Profile</div><div class="s-sub">Change your name</div></div>
+            </div>
+            <span class="s-arrow">›</span>
+          </div>
+          <div class="s-row">
+            <div class="s-left">
+              <div class="s-icon" style="background:#EAF3DE">🔔</div>
+              <div><div class="s-label">Notifications</div><div class="s-sub">Message alerts</div></div>
+            </div>
+            <button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></button>
+          </div>
+        </div>
+        <div class="s-group">
+          <div class="s-group-title">App</div>
+          <div class="s-row">
+            <div class="s-left">
+              <div class="s-icon" style="background:#FAEEDA">🎨</div>
+              <div><div class="s-label">Appearance</div><div class="s-sub">Blue &amp; Yellow theme</div></div>
+            </div>
+            <span class="s-arrow">›</span>
+          </div>
+          <div class="s-row">
+            <div class="s-left">
+              <div class="s-icon" style="background:#FBEAF0">🔒</div>
+              <div><div class="s-label">Privacy</div><div class="s-sub">Who can message you</div></div>
+            </div>
+            <span class="s-arrow">›</span>
+          </div>
+        </div>
+        <div class="s-group">
+          <div class="s-group-title">School</div>
+          <div class="s-row">
+            <div class="s-left">
+              <div class="s-icon" style="background:#E6F1FB">🏫</div>
+              <div><div class="s-label">Riverside Academy</div><div class="s-sub">School system connected</div></div>
+            </div>
+            <span class="s-arrow">›</span>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" id="nav-messages" onclick="showPanel('messages')"><span class="nav-icon">💬</span>Messages</div>
+    <div class="nav-item" id="nav-groups" onclick="showPanel('groups')"><span class="nav-icon">👥</span>Classes</div>
+    <div class="nav-item" id="nav-settings" onclick="showPanel('settings')"><span class="nav-icon">⚙️</span>Settings</div>
+  </div>
+</div>
+
+<!-- MODAL: NEW CONTACT -->
+<div class="modal-overlay" id="modal-contact">
+  <div class="modal">
+    <div class="modal-title">New Conversation</div>
+    <label class="modal-label">Name</label>
+    <input class="modal-input" id="new-contact-name" type="text" placeholder="e.g. Ms. Patel" />
+    <div class="modal-btns">
+      <button class="m-cancel" onclick="closeModal('modal-contact')">Cancel</button>
+      <button class="m-ok" onclick="addContact()">Start Chat</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: JOIN CLASS -->
+<div class="modal-overlay" id="modal-group">
+  <div class="modal">
+    <div class="modal-title">Join a Class</div>
+    <label class="modal-label">Class Name</label>
+    <input class="modal-input" id="new-group-name" type="text" placeholder="e.g. Science 8B" />
+    <label class="modal-label">Class Code (from your teacher)</label>
+    <input class="modal-input" id="new-group-code" type="text" placeholder="e.g. SCI8B-2026" />
+    <div class="modal-btns">
+      <button class="m-cancel" onclick="closeModal('modal-group')">Cancel</button>
+      <button class="m-ok" onclick="addGroup()">Join</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const S = { user: null, role: 'student', contacts: [], groups: [], messages: {}, active: null };
+
+  const COLORS = [
+    ['#EEF4FF','#185FA5'],['#EAF3DE','#27500A'],['#FBEAF0','#72243E'],
+    ['#FAEEDA','#633806'],['#E1F5EE','#085041'],['#F1EFE8','#444441']
+  ];
+  const GICONS = ['📚','🔬','➕','🎨','🌍','🎵','💻','🏃','🧪','📐'];
+
+  function color(name) {
+    let i = 0; for (let c of name) i += c.charCodeAt(0);
+    return COLORS[i % COLORS.length];
+  }
+  function ini(name) {
+    return name.trim().split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2) || '?';
+  }
+  function now() {
+    const d = new Date(), h = d.getHours(), m = d.getMinutes();
+    return (h%12||12)+':'+ String(m).padStart(2,'0')+(h>=12?'pm':'am');
+  }
+
+  // Clock
+  function tick() {
+    const d=new Date(),h=d.getHours(),m=d.getMinutes(),ap=h>=12?'PM':'AM';
+    const el=document.getElementById('clock');
+    if(el) el.textContent=(h%12||12)+':'+String(m).padStart(2,'0')+' '+ap;
+  }
+  tick(); setInterval(tick,10000);
+
+  // Role
+  function selectRole(r) {
+    S.role=r;
+    document.getElementById('role-student').classList.toggle('selected',r==='student');
+    document.getElementById('role-teacher').classList.toggle('selected',r==='teacher');
+  }
+
+  // Login
+  function doLogin() {
+    const name=document.getElementById('login-name').value.trim();
+    const pass=document.getElementById('login-pass').value.trim();
+    const err=document.getElementById('login-error');
+    if(!name||!pass){err.style.display='block';return;}
+    err.style.display='none';
+    S.user=name;
+    const [bg,col]=color(name);
+    const av=document.getElementById('header-av');
+    av.textContent=ini(name); av.style.background=bg; av.style.color=col;
+    document.getElementById('header-sub').textContent='Riverside Academy · '+(S.role==='teacher'?'Teacher':'Student');
+    document.getElementById('settings-name').textContent=name;
+    document.getElementById('settings-role').textContent=(S.role==='teacher'?'Teacher':'Student')+' · Riverside Academy';
+    const sav=document.getElementById('settings-av');
+    sav.textContent=ini(name); sav.style.background=bg; sav.style.color=col;
+    document.getElementById('screen-login').classList.remove('active');
+    document.getElementById('screen-app').classList.add('active');
+  }
+  document.getElementById('login-name').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pass').focus();});
+  document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+  // Logout
+  function doLogout() {
+    S.user=null; S.contacts=[]; S.groups=[]; S.messages={}; S.active=null;
+    document.getElementById('login-name').value='';
+    document.getElementById('login-pass').value='';
+    renderThreads(); renderGroups();
+    document.getElementById('chat-area').innerHTML=`<div class="empty-state" style="min-height:300px"><div class="empty-icon">👋</div><div class="empty-title">No chat open</div><div class="empty-sub">Select a conversation or tap + to start a new one.</div></div>`;
+    document.getElementById('thread-list').style.display='';
+    document.getElementById('chat-area').style.display='';
+    document.getElementById('screen-app').classList.remove('active');
+    document.getElementById('screen-login').classList.add('active');
+    showPanel('messages');
+  }
+
+  // Panels
+  function showPanel(name) {
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    document.getElementById('panel-'+name).classList.add('active');
+    const t=document.getElementById('tab-'+name), n=document.getElementById('nav-'+name);
+    if(t)t.classList.add('active'); if(n)n.classList.add('active');
+  }
+
+  // Modals
+  function openModal(id){document.getElementById(id).classList.add('open');}
+  function closeModal(id){document.getElementById(id).classList.remove('open');}
+  document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+  // Contacts
+  function addContact() {
+    const name=document.getElementById('new-contact-name').value.trim();
+    if(!name)return;
+    closeModal('modal-contact');
+    document.getElementById('new-contact-name').value='';
+    if(!S.contacts.includes(name)){S.contacts.push(name); S.messages[name]=[];}
+    renderThreads();
+    openChat(name);
+  }
+
+  function renderThreads() {
+    const el=document.getElementById('thread-items');
+    if(!S.contacts.length){
+      el.innerHTML=`<div class="empty-state" style="min-height:280px"><div class="empty-icon">💬</div><div class="empty-title">No messages yet</div><div class="empty-sub">Tap + to start a conversation.</div></div>`;
+      return;
+    }
+    el.innerHTML=S.contacts.map(name=>{
+      const msgs=S.messages[name]||[];
+      const last=msgs[msgs.length-1];
+      const snip=last?(last.mine?'You: '+last.text:last.text):'Say hello!';
+      const t=last?last.time:'';
+      const [bg,col]=color(name);
+      return `<div class="thread-item${S.active===name?' active':''}" onclick="openChat('${name.replace(/'/g,"\\'")}')">
+        <div class="t-av" style="background:${bg};color:${col}">${ini(name)}</div>
+        <div class="t-info"><div class="t-name">${name}</div><div class="t-snip">${snip}</div></div>
+        <div class="t-time">${t}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function openChat(name) {
+    S.active=name;
+    renderThreads();
+    const [bg,col]=color(name);
+    const msgs=S.messages[name]||[];
+    const ca=document.getElementById('chat-area');
+    ca.style.display='flex';
+    ca.style.flexDirection='column';
+    ca.innerHTML=`
+      <div class="chat-header">
+        <button class="back-btn" onclick="backToList()">‹</button>
+        <div class="c-av" style="background:${bg};color:${col}">${ini(name)}</div>
+        <div><div class="c-name">${name}</div><div class="c-status"><span class="odot"></span>Online</div></div>
+      </div>
+      <div class="messages" id="msg-list">
+        ${msgs.length?msgs.map(m=>msgHTML(m,name,bg,col)).join(''):`<div class="empty-state" style="min-height:180px;padding:30px 16px"><div class="empty-icon" style="font-size:36px">👋</div><div class="empty-sub">Start the conversation with ${name}!</div></div>`}
+      </div>
+      <div class="chat-input-bar">
+        <input class="chat-input" id="msg-input" type="text" placeholder="Message ${name}..." />
+        <button class="send-btn" onclick="sendMsg()">&#10148;</button>
+      </div>`;
+    document.getElementById('msg-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg();});
+    scrollDown();
+    if(window.innerWidth<640){
+      document.getElementById('thread-list').style.display='none';
+      ca.style.width='100%';
+    }
+  }
+
+  function msgHTML(m, name, bg, col) {
+    if(m.mine){
+      const [ubg,ucol]=color(S.user);
+      return `<div class="msg-row mine">
+        <div><div class="msg-bub mine">${m.text}</div><div class="msg-t r">${m.time}</div></div>
+        <div class="m-av" style="background:${ubg};color:${ucol}">${ini(S.user)}</div>
+      </div>`;
+    }
+    return `<div class="msg-row">
+      <div class="m-av" style="background:${bg};color:${col}">${ini(name)}</div>
+      <div><div class="msg-bub theirs">${m.text}</div><div class="msg-t">${m.time}</div></div>
+    </div>`;
+  }
+
+  function sendMsg() {
+    const inp=document.getElementById('msg-input');
+    const text=inp.value.trim();
+    if(!text||!S.active)return;
+    const t=now();
+    S.messages[S.active].push({mine:true,text,time:t});
+    const ml=document.getElementById('msg-list');
+    const [bg,col]=color(S.active);
+    const d=document.createElement('div');
+    d.innerHTML=msgHTML({mine:true,text,time:t},S.active,bg,col);
+    // remove empty state if present
+    const es=ml.querySelector('.empty-state');
+    if(es)es.remove();
+    ml.appendChild(d.firstElementChild);
+    inp.value='';
+    renderThreads();
+    scrollDown();
+  }
+
+  function scrollDown(){setTimeout(()=>{const ml=document.getElementById('msg-list');if(ml)ml.scrollTop=ml.scrollHeight;},50);}
+
+  function backToList(){
+    S.active=null;
+    document.getElementById('thread-list').style.display='';
+    document.getElementById('chat-area').style.display='';
+    renderThreads();
+  }
+
+  // Groups
+  function addGroup() {
+    const name=document.getElementById('new-group-name').value.trim();
+    if(!name)return;
+    S.groups.push(name);
+    renderGroups();
+    closeModal('modal-group');
+    document.getElementById('new-group-name').value='';
+    document.getElementById('new-group-code').value='';
+  }
+
+  function renderGroups() {
+    const grid=document.getElementById('groups-grid');
+    grid.innerHTML=S.groups.map((g,i)=>`
+      <div class="group-card">
+        <div class="g-icon">${GICONS[i%GICONS.length]}</div>
+        <div class="g-name">${g}</div>
+        <div class="g-meta">Riverside Academy</div>
+        <span class="g-badge">Joined</span>
+      </div>`).join('')+`<div class="add-group-card" onclick="openModal('modal-group')"><div class="ag-plus">+</div><div class="ag-text">Join a class</div></div>`;
+  }
+</script>
+</body>
+</html>
